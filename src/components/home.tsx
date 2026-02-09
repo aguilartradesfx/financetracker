@@ -1,8 +1,26 @@
+import { useEffect } from 'react';
+import { FinanceDashboard } from './dashboard/FinanceDashboard';
+import { useFinanceStore } from '@/store/financeStore';
+
 function Home() {
-  return (
-    <div className="w-screen h-screen">
-    </div>
-  )
+  const { initialize, isLoading, isInitialized } = useFinanceStore();
+
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
+
+  if (!isInitialized && isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-muted-foreground">Cargando datos financieros...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return <FinanceDashboard />;
 }
 
 export default Home

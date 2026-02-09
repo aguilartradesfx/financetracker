@@ -32,3 +32,6 @@ core
 
 .github/
 
+**/tempobook/**
+.env
+node_modules/
