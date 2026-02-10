@@ -22,6 +22,8 @@ export interface Client {
   totalPaid: number;          // Lo que han pagado
   myCost: number;             // Mi costo
   totalCharged: number;       // Lo que he cobrado
+  paymentMethod: IncomePaymentMethod; // Cómo paga el cliente (stripe, transferencia, efectivo)
+  lastPaymentDate?: Date;     // Fecha del último pago
 }
 
 export interface Transaction {

@@ -15,6 +15,7 @@ function Home() {
         <div className="text-center space-y-4">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
           <p className="text-muted-foreground">Cargando datos financieros...</p>
+          <p className="text-xs text-zinc-500">Conectando con Supabase y sincronizando...</p>
         </div>
       </div>
     );

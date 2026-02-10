@@ -19,8 +19,10 @@ export type Database = {
           company: string
           created_at: string | null
           id: string
+          last_payment_date: string | null
           my_cost: number
           name: string
+          payment_method: string | null
           total_charged: number
           total_invoice: number
           total_paid: number
@@ -29,8 +31,10 @@ export type Database = {
           company?: string
           created_at?: string | null
           id?: string
+          last_payment_date?: string | null
           my_cost?: number
           name: string
+          payment_method?: string | null
           total_charged?: number
           total_invoice?: number
           total_paid?: number
@@ -39,8 +43,10 @@ export type Database = {
           company?: string
           created_at?: string | null
           id?: string
+          last_payment_date?: string | null
           my_cost?: number
           name?: string
+          payment_method?: string | null
           total_charged?: number
           total_invoice?: number
           total_paid?: number

@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Plus, Users, Trash2, Edit2, HelpCircle, Info } from 'lucide-react';
+import { Plus, Users, Trash2, Edit2, HelpCircle, CreditCard } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Tooltip,
   TooltipContent,
@@ -16,10 +15,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { useFinanceStore } from '@/store/financeStore';
-import { Client } from '@/types/finance';
+import { Client, IncomePaymentMethod, INCOME_PAYMENT_METHODS } from '@/types/finance';
 import {
   Table,
   TableBody,
@@ -40,6 +47,8 @@ export function ClientManagement() {
     totalPaid: '',
     myCost: '',
     totalCharged: '',
+    paymentMethod: 'stripe' as IncomePaymentMethod,
+    paymentDate: new Date().toISOString().split('T')[0],
   });
 
   const resetForm = () => {
@@ -50,6 +59,8 @@ export function ClientManagement() {
       totalPaid: '',
       myCost: '',
       totalCharged: '',
+      paymentMethod: 'stripe',
+      paymentDate: new Date().toISOString().split('T')[0],
     });
     setEditingClient(null);
   };
@@ -63,12 +74,18 @@ export function ClientManagement() {
       totalPaid: client.totalPaid.toString(),
       myCost: client.myCost.toString(),
       totalCharged: client.totalCharged.toString(),
+      paymentMethod: client.paymentMethod || 'stripe',
+      paymentDate: client.lastPaymentDate 
+        ? new Date(client.lastPaymentDate).toISOString().split('T')[0]
+        : new Date().toISOString().split('T')[0],
     });
     setOpen(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const paymentDate = new Date(formData.paymentDate);
 
     if (editingClient) {
       updateClient(editingClient.id, {
@@ -78,6 +95,8 @@ export function ClientManagement() {
         totalPaid: parseFloat(formData.totalPaid) || 0,
         myCost: parseFloat(formData.myCost) || 0,
         totalCharged: parseFloat(formData.totalCharged) || 0,
+        paymentMethod: formData.paymentMethod,
+        lastPaymentDate: paymentDate,
       });
     } else {
       addClient({
@@ -87,6 +106,8 @@ export function ClientManagement() {
         totalPaid: parseFloat(formData.totalPaid) || 0,
         myCost: parseFloat(formData.myCost) || 0,
         totalCharged: parseFloat(formData.totalCharged) || 0,
+        paymentMethod: formData.paymentMethod,
+        lastPaymentDate: paymentDate,
       });
     }
 
@@ -126,7 +147,7 @@ export function ClientManagement() {
               Agregar Cliente
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-card border-border shadow-custom sm:max-w-[500px]">
+          <DialogContent className="bg-card border-border shadow-custom sm:max-w-[550px]">
             <DialogHeader>
               <DialogTitle className="text-2xl font-bold text-foreground">
                 {editingClient ? 'Editar Cliente' : 'Nuevo Cliente'}
@@ -183,6 +204,67 @@ export function ClientManagement() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center gap-1">
+                    <Label className="text-sm font-medium text-foreground">Método de Pago</Label>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-xs">¿Cómo te paga este cliente? Se usará automáticamente al registrar cobros</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                  <Select
+                    value={formData.paymentMethod}
+                    onValueChange={(value: IncomePaymentMethod) =>
+                      setFormData({ ...formData, paymentMethod: value })
+                    }
+                  >
+                    <SelectTrigger className="bg-background border-border rounded-xl">
+                      <SelectValue placeholder="Seleccionar método" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card border-border">
+                      {INCOME_PAYMENT_METHODS.map((pm) => (
+                        <SelectItem key={pm.value} value={pm.value}>
+                          <div className="flex items-center gap-2">
+                            <CreditCard className="w-3.5 h-3.5" />
+                            {pm.label}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center gap-1">
+                  <Label className="text-sm font-medium text-foreground">Fecha de Pago</Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs">Fecha real en la que recibiste el pago</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <Input
+                  type="date"
+                  value={formData.paymentDate}
+                  onChange={(e) => setFormData({ ...formData, paymentDate: e.target.value })}
+                  className="bg-background border-border rounded-xl"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1">
                     <Label className="text-sm font-medium text-foreground">Pagado ($)</Label>
                     <TooltipProvider>
                       <Tooltip>
@@ -190,7 +272,7 @@ export function ClientManagement() {
                           <HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p className="max-w-xs">Cuánto ha pagado el cliente de la factura total</p>
+                          <p className="max-w-xs">Cuánto ha pagado el cliente de la factura total (solo seguimiento - no afecta Dashboard)</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -205,9 +287,6 @@ export function ClientManagement() {
                     required
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <div className="flex items-center gap-1">
                     <Label className="text-sm font-medium text-foreground">Mi Costo ($)</Label>
@@ -241,7 +320,7 @@ export function ClientManagement() {
                           <HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p className="max-w-xs">Dinero que YA recibiste del cliente (tu ganancia real hasta ahora)</p>
+                          <p className="max-w-xs">✅ AUTOMÁTICO: Cuándo incrementes este valor, se creará un ingreso automático en el Dashboard</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -279,13 +358,7 @@ export function ClientManagement() {
         </Dialog>
       </div>
 
-      <Alert className="mb-6 bg-primary/5 border-primary/20">
-        <Info className="h-4 w-4 text-primary" />
-        <AlertDescription className="text-sm text-foreground/80">
-          Los clientes registrados aquí <strong>NO aparecen automáticamente</strong> en el Dashboard o Ingresos. 
-          Para registrar un ingreso, ve a la pestaña <strong>"Ingresos"</strong> y crea una transacción vinculada al cliente.
-        </AlertDescription>
-      </Alert>
+
 
       {clients.length === 0 ? (
         <div className="text-center py-12">
@@ -300,6 +373,7 @@ export function ClientManagement() {
             <TableHeader>
               <TableRow className="bg-background/50 hover:bg-background/50">
                 <TableHead className="text-muted-foreground font-semibold">Cliente</TableHead>
+                <TableHead className="text-muted-foreground font-semibold">Método de Pago</TableHead>
                 <TableHead className="text-muted-foreground font-semibold text-right">Factura Total</TableHead>
                 <TableHead className="text-muted-foreground font-semibold text-right">Pagado</TableHead>
                 <TableHead className="text-muted-foreground font-semibold text-right">Restante</TableHead>
@@ -318,6 +392,20 @@ export function ClientManagement() {
                         <p className="font-semibold text-foreground">{client.name}</p>
                         <p className="text-xs text-muted-foreground">{client.company}</p>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={
+                          client.paymentMethod === 'stripe'
+                            ? 'border-purple-500/50 text-purple-400 bg-purple-500/10'
+                            : client.paymentMethod === 'transferencia'
+                            ? 'border-blue-500/50 text-blue-400 bg-blue-500/10'
+                            : 'border-green-500/50 text-green-400 bg-green-500/10'
+                        }
+                      >
+                        {INCOME_PAYMENT_METHODS.find(pm => pm.value === client.paymentMethod)?.label || 'Stripe'}
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-right font-medium text-foreground">
                       ${client.totalInvoice.toLocaleString()}
@@ -360,6 +448,7 @@ export function ClientManagement() {
               {/* Totals row */}
               <TableRow className="bg-background/50 hover:bg-background/50 border-t-2 border-border">
                 <TableCell className="font-bold text-foreground">Totales</TableCell>
+                <TableCell />
                 <TableCell className="text-right font-bold text-foreground">
                   ${totals.totalInvoice.toLocaleString()}
                 </TableCell>

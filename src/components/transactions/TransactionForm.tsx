@@ -189,7 +189,7 @@ export function TransactionForm({ trigger, defaultType }: TransactionFormProps) 
           {currentType === 'expense' && (
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground">
-                Método de Pago
+                ¿Con qué tarjeta/cuenta pagaste?
               </Label>
               <Select
                 value={formData.paymentMethodId}
@@ -199,10 +199,10 @@ export function TransactionForm({ trigger, defaultType }: TransactionFormProps) 
                 required
               >
                 <SelectTrigger className="bg-background border-border rounded-xl">
-                  <SelectValue placeholder="Seleccionar método de pago" />
+                  <SelectValue placeholder="Seleccionar tu método de pago" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
-                  {paymentMethods.map((pm) => (
+                  {paymentMethods.filter(pm => pm.type === 'tarjeta' || pm.type === 'banco' || pm.type === 'digital').map((pm) => (
                     <SelectItem key={pm.id} value={pm.id}>
                       {pm.name}
                     </SelectItem>

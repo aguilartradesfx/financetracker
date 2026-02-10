@@ -13,6 +13,12 @@ export const supabase = supabaseConnected
           'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in project settings.'
         );
       },
+      channel() {
+        return {
+          on() { return this; },
+          subscribe() { return this; },
+        };
+      },
       auth: {
         getSession() {
           throw new Error(
